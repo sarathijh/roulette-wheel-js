@@ -7,6 +7,22 @@
     <title>My Website</title>
     <link rel="stylesheet" href="reset.css"/>
     <style>
+        body {
+            background: url("felt.webp") repeat;
+        }
+
+        .triangle-down {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translate(-50%, 0);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid white;
+        }
+
         #roulette-wheel {
             display: block;
             width: 100vw;
@@ -27,6 +43,7 @@
 </head>
 <body>
 <main>
+    <div class="triangle-down"></div>
     <div id="roulette-container"></div>
     <button id="roulette-spin" onclick="spinWheel()">Spin!!</button>
 </main>
@@ -101,6 +118,7 @@
         if ((t /= d / 2) < 1) return c / 2 * t * t + b;
         return -c / 2 * ((--t) * (t - 2) - 1) + b;
     }
+
     //endregion
 </script>
 </body>

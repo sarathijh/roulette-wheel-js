@@ -21,17 +21,23 @@ function buildSvgRouletteWheel(values, colors = ["red", "black"]) {
         let centerAngle = angle + arcSweepRadians / 2;
 
         // Create an SVG arc element with our parameters.
-        let arc = svgEllipseArc([svgCenter, svgCenter], [svgRadius, svgRadius], [angle, arcSweepRadians], 0);
+        let arc = svgEllipseArc([svgCenter, svgCenter], [svgRadius - 1, svgRadius - 1], [angle, arcSweepRadians], 0);
         // Set the color of the arc to the correct green, red or black based on its index.
         let arcColor = index === 0 ? "green" : colors[(index - 1) % 2];
         arc.setAttribute("style", `fill: none; stroke: ${arcColor}; stroke-width: 20;`);
         // Add it to the SVG image.
         svg.append(arc);
 
+        // Create an SVG arc element with our parameters.
+        let arcInner = svgEllipseArc([svgCenter, svgCenter], [svgRadius - 22, svgRadius - 22], [angle, arcSweepRadians], 0);
+        arcInner.setAttribute("style", `fill: none; stroke: ${arcColor}; stroke-width: 20;`);
+        // Add it to the SVG image.
+        svg.append(arcInner);
+
         // Create an SVG text element.
         let text = document.createElementNS(svgNamespace, "text");
-        let textX = svgCenter + svgRadius * Math.cos(centerAngle);
-        let textY = svgCenter + svgRadius * Math.sin(centerAngle);
+        let textX = svgCenter + (svgRadius - 3) * Math.cos(centerAngle);
+        let textY = svgCenter + (svgRadius - 3) * Math.sin(centerAngle);
         let textAngleDeg = rad2deg(centerAngle) + 90;
         // Set the position and rotation of the text for the current arc.
         text.setAttribute("transform", `translate(${textX}, ${textY}) rotate(${textAngleDeg})`);
@@ -43,6 +49,44 @@ function buildSvgRouletteWheel(values, colors = ["red", "black"]) {
 
         index += 1;
     }
+
+    // Create an SVG arc element with our parameters.
+    let borderInnerInner = document.createElementNS(svgNamespace, "circle");
+    borderInnerInner.setAttribute("cx", svgCenter.toString());
+    borderInnerInner.setAttribute("cy", svgCenter.toString());
+    borderInnerInner.setAttribute("r", (svgRadius - 32.5).toString());
+    borderInnerInner.setAttribute("style", `fill: none; stroke: white; stroke-width: 1;`);
+    // Add it to the SVG image.
+    svg.append(borderInnerInner);
+
+    // Create an SVG arc element with our parameters.
+    let borderInner = document.createElementNS(svgNamespace, "circle");
+    borderInner.setAttribute("cx", svgCenter.toString());
+    borderInner.setAttribute("cy", svgCenter.toString());
+    borderInner.setAttribute("r", (svgRadius - 11.5).toString());
+    borderInner.setAttribute("style", `fill: none; stroke: white; stroke-width: 1;`);
+    // Add it to the SVG image.
+    svg.append(borderInner);
+
+    // Create an SVG arc element with our parameters.
+    let borderOuter = document.createElementNS(svgNamespace, "circle");
+    borderOuter.setAttribute("cx", svgCenter.toString());
+    borderOuter.setAttribute("cy", svgCenter.toString());
+    borderOuter.setAttribute("r", (svgRadius + 9.5).toString());
+    borderOuter.setAttribute("style", `fill: none; stroke: white; stroke-width: 1;`);
+    // Add it to the SVG image.
+    svg.append(borderOuter);
+
+    // Create an SVG arc element with our parameters.
+    let centerRadius = 114.5;
+    let centerWood = document.createElementNS(svgNamespace, "image");
+    centerWood.setAttribute("href", "wood.png");
+    centerWood.setAttribute("x", (svgCenter - centerRadius / 2).toString());
+    centerWood.setAttribute("y", (svgCenter - centerRadius / 2).toString());
+    centerWood.setAttribute("width", centerRadius.toString());
+    centerWood.setAttribute("height", centerRadius.toString());
+    // Add it to the SVG image.
+    svg.append(centerWood);
 
     return {
         element: svg,
