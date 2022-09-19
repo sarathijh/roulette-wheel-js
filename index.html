@@ -26,35 +26,14 @@
     </style>
 </head>
 <body>
-<svg id="roulette-wheel" viewBox="0 0 200 200">
-    <style>
-        .zero {
-            stroke: green;
-            fill: none;
-            stroke-width: 20;
-        }
-
-        .red {
-            stroke: red;
-            fill: none;
-            stroke-width: 20;
-        }
-
-        .black {
-            stroke: black;
-            fill: none;
-            stroke-width: 20;
-        }
-
-        .value {
-            font: normal 8px sans-serif;
-            fill: white;
-        }
-    </style>
-</svg>
-<button id="roulette-spin" onclick="spin()">Spin!!</button>
+<main>
+    <div id="roulette-container"></div>
+    <button id="roulette-spin" onclick="spinWheel()">Spin!!</button>
+</main>
 <script src="svg.js"></script>
+<script src="roulette-svg.js"></script>
 <script>
+    //region Configuration
     // The possible values on the roulette wheel.
     // These are also defined in the clockwise order they appear on the wheel.
     const values = [
@@ -64,68 +43,41 @@
 
     // Configuration for the spin animation.
     const spinAnimationConfig = {
-        // How long the spin lasts for
+        // How many milliseconds the spin animation lasts for
         durationMillis: 3000,
         // How many times the wheel fully rotates before stopping at the target value
         revolutions: 5,
     };
 
-    // The SVG image element that will be our roulette wheel image.
-    const rouletteWheelElement = document.getElementById("roulette-wheel");
+    // How to choose a target index when the wheel is spun.
+    const chooseTargetIndex = () => Math.floor(Math.random() * values.length);
+    //endregion
 
-    // The radius of the wheel in the SVG image.
-    // Since the stroke width of each arc in the wheel is 20 and the stroke width expands the arc equally outward and
-    // inward, we need to subtract half the stroke width from the radius, so it doesn't clip outside the image.
-    const svgRadius = 90;
-    // How many radius long each value arc in the wheel is.
-    const arcSweepRadians = 2 * Math.PI / values.length;
-    // The colors for each alternating value.
-    const colors = ["red", "black"];
+    //region Create Roulette Wheel
+    // Build the roulette wheel image and add it to the page.
+    let rouletteWheel = buildSvgRouletteWheel(values);
+    rouletteWheel.element.id = "roulette-wheel";
+    document.getElementById("roulette-container").appendChild(rouletteWheel.element);
+    //endregion
 
-    // Loop through each value in our array and create an arc element with the color and a text element with the value.
-    let index = 0;
-    for (let value of values) {
-        // Adjust our current angle to start at the top instead of on the right side of the circle.
-        let angle = index * arcSweepRadians + 3 * Math.PI / 2 - arcSweepRadians / 2;
-        // We want to center each arc, so adjust it by half the arc length;
-        let centerAngle = angle + arcSweepRadians / 2;
-
-        // Create an SVG arc element with our parameters.
-        let arc = svgEllipseArc([100, 100], [svgRadius, svgRadius], [angle, arcSweepRadians], 0);
-        // Give it the correct class for the color.
-        arc.classList.add(index === 0 ? "zero" : colors[(index - 1) % 2])
-        // Add it to the SVG image.
-        rouletteWheelElement.append(arc);
-
-        // Create an SVG text element/
-        let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        // Set the position and rotation of the text for the current arc.
-        text.setAttribute("transform", `translate(${100 + svgRadius * Math.cos(centerAngle)}, ${100 + svgRadius * Math.sin(centerAngle)}) rotate(${rad2deg(centerAngle) + 90})`);
-        text.setAttribute("text-anchor", "middle");
-        text.classList.add("value");
-        text.textContent = value.toString();
-        // Add it to the SVG image.
-        rouletteWheelElement.append(text);
-
-        index += 1;
-    }
-
+    //region Spin Animation
     const spinButton = document.getElementById("roulette-spin");
 
     let startAngle = 0;
     let targetAngle = 0;
     let startTimestamp = null;
 
-    function spin() {
+    // Starts the wheel spinning animation and configures it to land on a randomly chosen target value.
+    function spinWheel() {
         spinButton.disabled = true;
-        let targetIndex = Math.floor(Math.random() * values.length);
+        let targetIndex = chooseTargetIndex();
         console.log(values[targetIndex]);
-        targetAngle = targetIndex * arcSweepRadians + 2 * Math.PI * spinAnimationConfig.revolutions;
+        targetAngle = rouletteWheel.angleForIndex(targetIndex) + 2 * Math.PI * spinAnimationConfig.revolutions;
         startTimestamp = null;
-        window.requestAnimationFrame(rotate);
+        window.requestAnimationFrame(rotateAnimationFrame);
     }
 
-    function rotate(timestamp) {
+    function rotateAnimationFrame(timestamp) {
         if (startTimestamp == null) {
             startTimestamp = timestamp;
         }
@@ -135,10 +87,10 @@
 
         let angle = easeInOutQuad(t, startAngle, targetAngle - startAngle, 1);
 
-        rouletteWheelElement.style.transform = `rotate(${-angle}rad)`;
+        rouletteWheel.element.style.transform = `rotate(${-angle}rad)`;
 
         if (elapsed <= spinAnimationConfig.durationMillis) {
-            window.requestAnimationFrame(rotate);
+            window.requestAnimationFrame(rotateAnimationFrame);
         } else {
             startAngle = angle % (2 * Math.PI);
             spinButton.disabled = false;
@@ -149,10 +101,7 @@
         if ((t /= d / 2) < 1) return c / 2 * t * t + b;
         return -c / 2 * ((--t) * (t - 2) - 1) + b;
     }
-
-    function rad2deg(degrees) {
-        return degrees * (180 / Math.PI);
-    }
+    //endregion
 </script>
 </body>
 </html>
